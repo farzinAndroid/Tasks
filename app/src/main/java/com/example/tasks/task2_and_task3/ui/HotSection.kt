@@ -56,21 +56,7 @@ fun HotSection(
 
     LaunchedEffect(true){
         viewModel.filteredSuperMarketItems.collectLatest {superMarketItemResult->
-            when (superMarketItemResult) {
-                is NetworkResult.Success -> {
-                    superMarketItemList = superMarketItemResult.data ?: emptyList()
-                    loading = false
-                }
-
-                is NetworkResult.Error -> {
-                    loading = false
-                    Log.e("3636", "superMarketOfferSection error : ${superMarketItemResult.message}")
-                }
-
-                is NetworkResult.Loading -> {
-                    loading = true
-                }
-            }
+            superMarketItemList = superMarketItemResult.data ?: emptyList()
         }
     }
 
