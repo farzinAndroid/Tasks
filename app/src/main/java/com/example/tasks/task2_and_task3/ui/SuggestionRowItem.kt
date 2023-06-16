@@ -1,4 +1,4 @@
-package com.example.tasks.task2
+package com.example.tasks.task2_and_task3.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

@@ -1,22 +1,101 @@
-package com.example.tasks.task2
+package com.example.tasks.task2_and_task3.ui
 
+import android.annotation.SuppressLint
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.tasks.R
+import com.example.tasks.task2_and_task3.data.model.AmazingItem
+import com.example.tasks.task2_and_task3.data.remote.NetworkResult
+import com.example.tasks.task2_and_task3.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
 
+@SuppressLint("FlowOperatorInvokedInComposition")
 @Composable
-fun HotSection() {
+fun HotSection(
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
+
+    val context = LocalContext.current
+
+    getAllDataFromServer(viewModel)
+
+    var superMarketItemList by remember {
+        mutableStateOf<List<AmazingItem>>(emptyList())
+    }
+    var loading by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(true){
+        viewModel.filteredSuperMarketItems.collectLatest {superMarketItemResult->
+            when (superMarketItemResult) {
+                is NetworkResult.Success -> {
+                    superMarketItemList = superMarketItemResult.data ?: emptyList()
+                    loading = false
+                }
+
+                is NetworkResult.Error -> {
+                    loading = false
+                    Log.e("3636", "superMarketOfferSection error : ${superMarketItemResult.message}")
+                }
+
+                is NetworkResult.Loading -> {
+                    loading = true
+                }
+            }
+        }
+    }
 
 
-    Column(
+
+
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        items(superMarketItemList){ list ->
+           HotItem(
+               painter = rememberAsyncImagePainter(list.image),
+               title = list.name,
+               isHaveBadge = true,
+               badgeTitle = list.discountPercent.toString()
+           )
+        }
+    }
+
+    /*Column(
 
     ) {
 
@@ -150,6 +229,10 @@ fun HotSection() {
 
         }
 
-    }
+    }*/
 
+}
+
+private fun getAllDataFromServer(vm:HomeViewModel){
+    vm.getDataFromServer()
 }

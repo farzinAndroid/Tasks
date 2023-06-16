@@ -1,4 +1,4 @@
-package com.example.tasks.task2
+package com.example.tasks.task2_and_task3.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tasks.R
@@ -75,20 +76,21 @@ fun HotItem(
                 modifier = Modifier
                     .padding(end = 8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color.Red)
+                    .background(Color.Red),
+                contentAlignment = Alignment.Center
 
 
             ) {
 
 
                 Text(
-                    text = badgeTitle,
-                    fontSize = 8.sp,
+                    text = "${DigitHelper.digitByLang(badgeTitle)}%",
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     modifier = Modifier
                         .padding(horizontal = 6.dp),
-                    fontFamily = FontFamily(Font(R.font.sans))
+                    fontFamily = FontFamily(Font(R.font.sans)),
                 )
 
             }

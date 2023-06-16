@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -11,11 +12,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import com.example.tasks.task2.Content
-import com.example.tasks.task2.TopBar
+import com.example.tasks.task2_and_task3.ui.Content
+import com.example.tasks.task2_and_task3.ui.TopBar
 import com.example.tasks.ui.theme.TasksTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +28,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             TasksTheme {
                 // A surface container using the 'background' color from the theme
+
+
 
 
 
