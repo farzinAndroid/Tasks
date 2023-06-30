@@ -131,7 +131,7 @@ fun SuggestionTabRows() {
                 }
 
                 1 -> {
-                    HotSection()
+                    GoldSection()
                 }
 
                 2 -> {

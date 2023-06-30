@@ -2,8 +2,10 @@ package com.example.tasks.task4
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -13,11 +15,16 @@ import android.provider.Settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import org.osmdroid.util.GeoPoint
+import com.example.tasks.task4.PermissionConstants.LOCATION_SETTINGS_REQUEST_CODE
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import com.google.android.gms.location.LocationRequest
 
 class MyLocationManager(
     private val context: Context,
@@ -44,6 +51,11 @@ class MyLocationManager(
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             onLocationError("Permission not granted")
+            ActivityCompat.requestPermissions(
+                activity,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                PermissionConstants.REQUEST_CODE_PERMISSION
+            )
             return
         }
 
@@ -51,19 +63,24 @@ class MyLocationManager(
 
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             onLocationError("Location services disabled")
-            // Create a new intent to open the location settings
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            // Start the activity for result, pass an arbitrary request code
-            activity.startActivityForResult(intent, 1234)
+            AlertDialog.Builder(context)
+                .setTitle("Location services disabled")
+                .setMessage("Do you want to enable location services?")
+                .setPositiveButton("Yes") { _, _ ->
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    activity.startActivityForResult(intent, PermissionConstants.REQUEST_CODE_PERMISSION)
+                }
+                .setNegativeButton("No") { _, _ -> }
+                .show()
             return
         }
 
-        // Create a new LocationOverlay
+
         val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
 
-        // Add the LocationOverlay to the MapView and enable it
+
         mapView.overlays.add(locationOverlay)
-        mapView.controller.setZoom(12.0)
+        mapView.controller.setZoom(10.0)
         locationOverlay.enableMyLocation()
 
 
@@ -71,16 +88,7 @@ class MyLocationManager(
             LocationManager.GPS_PROVIDER,
             0L,
             0f,
-            object : LocationListener {
-                override fun onLocationChanged(location: Location) {
-                    onLocationChangedEvent(location)
-//                    mapView.controller.setCenter(GeoPoint(location))
-                }
-
-                override fun onProviderEnabled(provider: String) {}
-                override fun onProviderDisabled(provider: String) {}
-                override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-            }
+            locationListener
         )
     }
 
@@ -91,5 +99,33 @@ class MyLocationManager(
 
     fun isGpsEnabled(): Boolean {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    fun enableLocationServices(activity: Activity, mapView: MapView) {
+        val locationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(10 * 1000)
+            .setFastestInterval(5 * 1000)
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+        val client = LocationServices.getSettingsClient(activity)
+        val task = client.checkLocationSettings(builder.build())
+        task.addOnSuccessListener {
+
+            startLocationUpdates(mapView, activity)
+        }
+        task.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+
+                try {
+                    exception.startResolutionForResult(activity, LOCATION_SETTINGS_REQUEST_CODE)
+                } catch (sendEx: IntentSender.SendIntentException) {
+
+                }
+            } else {
+
+                onLocationError("Location services disabled")
+            }
+        }
     }
 }
