@@ -75,10 +75,10 @@ class MyLocationManager(
             return
         }
 
-
+        // Create a new LocationOverlay
         val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(context), mapView)
 
-
+        // Add the LocationOverlay to the MapView and enable it
         mapView.overlays.add(locationOverlay)
         mapView.controller.setZoom(10.0)
         locationOverlay.enableMyLocation()
@@ -111,19 +111,19 @@ class MyLocationManager(
         val client = LocationServices.getSettingsClient(activity)
         val task = client.checkLocationSettings(builder.build())
         task.addOnSuccessListener {
-
+            // Location services are already enabled
             startLocationUpdates(mapView, activity)
         }
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
-
+                // Location services are not enabled, but can be enabled by showing the user a dialog
                 try {
                     exception.startResolutionForResult(activity, LOCATION_SETTINGS_REQUEST_CODE)
                 } catch (sendEx: IntentSender.SendIntentException) {
-
+                    // Ignore the error
                 }
             } else {
-
+                // Location services are not enabled and cannot be enabled by showing the user a dialog
                 onLocationError("Location services disabled")
             }
         }
