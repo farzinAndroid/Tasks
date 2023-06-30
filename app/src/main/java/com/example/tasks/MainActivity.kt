@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TasksTheme {
-                // A surface container using the 'background' color from the theme
+
 
 
 
@@ -127,11 +127,11 @@ fun MapScreen() {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Initialize the OpenStreetMap library
+
             Configuration.getInstance()
                 .load(context, PreferenceManager.getDefaultSharedPreferences(context))
 
-            // Show the map and the current location, if available
+
 
                 AndroidView(
                     modifier = Modifier.weight(1f),
