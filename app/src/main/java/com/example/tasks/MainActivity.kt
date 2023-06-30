@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.tasks.task4.MapScreen
 import com.example.tasks.task4.MyLocationManager
 import com.example.tasks.ui.theme.TasksTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,79 +71,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MapScreen() {
-    var myLocation by remember { mutableStateOf("") }
-    var currentLocation by remember { mutableStateOf<Location?>(null) }
 
-    val context = LocalContext.current
-
-    val myLocationManager = remember {
-        MyLocationManager(
-            context = context,
-            onLocationChangedEvent = { location ->
-                currentLocation = location
-                myLocation = "Lat: ${location.latitude}, Long: ${location.longitude}"
-            },
-            onLocationError = { error ->
-                currentLocation = null
-                myLocation = ""
-            }
-        )
-
-    }
-
-    val mapView = remember {
-        MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            this.visibility = View.VISIBLE
-            setMultiTouchControls(true)
-        }
-    }
-
-    SideEffect {
-        myLocationManager.enableLocationServices(context as Activity, mapView)
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(title = {
-                if (myLocation.isNullOrBlank()) {
-                    Text(
-                        text = "Please Activate Your Location",
-                        fontSize = 12.sp,
-                        color = Color.Yellow
-                    )
-                } else {
-                    Text(
-                        text = "Location state : Lat ${currentLocation?.latitude} Long ${currentLocation?.longitude}",
-                        fontSize = 12.sp,
-                    )
-                }
-            })
-        }
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-
-            Configuration.getInstance()
-                .load(context, PreferenceManager.getDefaultSharedPreferences(context))
-
-
-
-                AndroidView(
-                    modifier = Modifier.weight(1f),
-                    factory = {
-                        mapView
-                    })
-
-
-        }
-    }
-}
 
 
 
