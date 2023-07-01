@@ -5,13 +5,21 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Looper
 import android.preference.PreferenceManager
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -25,14 +33,27 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
-@SuppressLint("UnrememberedMutableState")
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnrememberedMutableState", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MyMap(locationPermissionGranted: Boolean, locationSettingsEnabled: Boolean, locationRequest:LocationRequest) {
+fun MyMap(
+    locationPermissionGranted: Boolean,
+    locationSettingsEnabled: Boolean,
+    locationRequest:LocationRequest
+) {
     if (locationPermissionGranted && locationSettingsEnabled) {
 
         var mapView: MapView? by mutableStateOf(null)
         var mapController: IMapController? by mutableStateOf(null)
         var currentLocation by mutableStateOf(GeoPoint(0.0, 0.0))
+
+        var lat by remember {
+            mutableStateOf("loading")
+        }
+
+        var long by remember {
+            mutableStateOf("loading")
+        }
 
         val context = LocalContext.current
         LaunchedEffect(Unit) {
@@ -47,18 +68,38 @@ fun MyMap(locationPermissionGranted: Boolean, locationSettingsEnabled: Boolean, 
             }
         }
 
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { mapView ?: MapView(context).apply { setMultiTouchControls(true) } },
-            update = { mapView ->
-                mapView.overlays.clear()
-                val marker = Marker(mapView)
-                marker.position = currentLocation
-                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                mapView.overlays.add(marker)
-                mapView.invalidate()
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize(),
+            topBar = {
+                Column {
+                    Text(text = "lat : $lat", color = Color.Black)
+                    Text(text = "long : $long",color = Color.Black)
+                }
             }
-        )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { mapView ?: MapView(context).apply { setMultiTouchControls(true) } },
+                    update = { map ->
+                        map.overlays.clear()
+                        val marker = Marker(map)
+                        marker.position = currentLocation
+                        map.overlays.add(marker)
+                        map.invalidate()
+                    }
+                )
+            }
+
+        }
+
+
+
 
         LaunchedEffect(Unit) {
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
@@ -67,6 +108,8 @@ fun MyMap(locationPermissionGranted: Boolean, locationSettingsEnabled: Boolean, 
                     locationResult.locations.forEach { location ->
                         currentLocation = GeoPoint(location.latitude, location.longitude)
                         mapController?.animateTo(currentLocation)
+                        lat = location.latitude.toString()
+                        long = location.longitude.toString()
                     }
                 }
             }
